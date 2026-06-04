@@ -1,0 +1,125 @@
+[project]
+name = "vespagent"
+version = "0.1.0"
+description = "VESPA — a Virtual Event Storming Practitioner Agent that interviews a domain expert and builds a structured DDD domain model."
+readme = "README.md"
+authors = [{ name = "Berislav Lopac", email = "berislav.lopac@gmail.com" }]
+requires-python = "~=3.14.0"
+dependencies = [
+    "logfire>=3.0.0",
+    "pydantic>=2.9.0",
+    "pydantic-ai>=0.0.40",
+    "pydantic-settings>=2.12.0",
+]
+
+[project.scripts]
+vespa = "vespagent.presentation.cli:main"
+
+[dependency-groups]
+dev = [
+    "deptry>=0.23.0",
+    "pip>=25.1.1",
+    "pyrefly>=1.0.0",
+    "ruff>=0.11.12",
+]
+tests = [
+    "pytest>=8.1.1",
+    "pytest-cov>=5.0.0",
+    "pytest-spec>=3.2.0",
+]
+
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[tool.uv]
+default-groups = "all"
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+filterwarnings = [
+    "ignore::DeprecationWarning"
+]
+
+[tool.coverage.run]
+source = ["src/vespagent/", ]
+omit = ["*/tests/*", ]
+
+[tool.coverage.report]
+skip_covered = false
+show_missing = true
+fail_under = 90
+exclude_also = ["pragma: no cover", "@abstract", "if TYPE_CHECKING:", "\\.\\.\\.",]
+
+[tool.pyrefly]
+project-excludes = [
+    "**/tests/**",
+    "**/.venv/**",
+]
+
+[tool.ruff]
+line-length = 96
+output-format = "grouped"
+
+[tool.ruff.lint]
+select = [  # see https://docs.astral.sh/ruff/rules/
+    "E4", "E7", "E9",  # basic pycodestyle rules
+    "W",        # pycodestyle warnings
+    "F",        # Pyflakes rules
+    "C90",      # McCabe complexity
+    "N",        # PEP8 naming conventions
+    "I",        # import statements linting and formatting
+    "PLR",      # Pylint refactoring recommendations
+    "PTH",      # recommends to use pathlib instead of os.path
+    "UP",       # pyupgrade suggestions
+    "BLE",      # locates blind exception capture
+    "B",        # locates possible bugs and design problems
+    "A",        # locates shadowing of builtin names
+    "C4",       # locates possible issues with comprehensions
+    "DTZ",      # locates incorrect use of timezone information
+    "PIE",      # miscellaneous linting rules
+    "TRY",      # locates potential exception handling antipatterns
+    "PERF",     # locates potential performance issues
+    "RUF",      # various Ruff-specific linting rules
+    "S",        # various insecure code, with bandit
+    "ERA",      # eradicate: commented-out code
+]
+external = [
+    "F841",     # vulture uses this code for ignoring unused names
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = [
+    "F401",     # allow unused imports
+    "F403",     # allow `import *`
+]
+"tests/*" = [
+    "PLR0913",  # unlimited function arguments
+    "S101",     # allow asserts
+    "S105",     # allow harcoded passwords
+    "N802",     # allow variable case in test names
+    "PLR2004",  # allow magic values in comparisons
+    "S311"      # allow random generator
+]
+
+[tool.ruff.lint.isort]
+# see https://docs.astral.sh/ruff/settings/#lintisort
+known-first-party = ["vespagent"]
+force-sort-within-sections = true
+
+[tool.ruff.lint.pylint]
+max-args = 6
+
+[tool.ruff.format]
+docstring-code-format = false
+
+[tool.deptry]
+[tool.deptry.per_rule_ignores]
+# These are wired in as the project grows (build order §9); not imported yet by the
+# scaffold, so deptry's "defined but not used" check is silenced until they are.
+DEP002 = [
+    "logfire",
+    "pydantic",
+    "pydantic-ai",
+    "pydantic-settings",
+]
