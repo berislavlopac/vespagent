@@ -84,6 +84,10 @@ select = [  # see https://docs.astral.sh/ruff/rules/
     "S",        # various insecure code, with bandit
     "ERA",      # eradicate: commented-out code
 ]
+ignore = [
+    "TRY003",   # contextual messages in raised exceptions are intentional (esp. Pydantic
+                # field validators and domain errors)
+]
 external = [
     "F841",     # vulture uses this code for ignoring unused names
 ]
@@ -114,6 +118,8 @@ max-args = 6
 docstring-code-format = false
 
 [tool.deptry]
+known_first_party = ["vespagent"]
+
 [tool.deptry.per_rule_ignores]
 # These are wired in as the project grows (build order §9); not imported yet by the
 # scaffold, so deptry's "defined but not used" check is silenced until they are.

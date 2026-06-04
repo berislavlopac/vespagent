@@ -15,19 +15,19 @@ strategy, and the build order.
 
 ## Architecture
 
-Hexagonal / ports-and-adapters with a framework-free core, laid out as DDD layers:
+Hexagonal architecture with a framework-free core, laid out as DDD layers:
 
 ```
 src/vespagent/
-├── domain/          # event-storming types + behaviour, ports (Protocols), exceptions
+C├── domain/          # base classes + a package per aggregate (root, value objects, repository)
 ├── application/     # orchestration: the adaptive turn loop / use cases
 ├── infrastructure/  # adapters: Pydantic AI role agents (ACL), store, render, export
-├── presentation/    # CLI now; web board later behind the same ports
+├── presentation/    # CLI now; web board later behind the same protocols
 ├── wiring/          # composition root, config, provider selection
 └── common/          # shared, layer-neutral helpers
 prompts/             # one versioned prompt file per role
 evals/               # scenarios + gold-standard models + scorers + baseline
-tests/               # Layer 1 (stubbed-port unit) & Layer 2 (schema) tests
+tests/               # Layer 1 (stubbed-protocol unit) & Layer 2 (schema) tests
 ```
 
 The dependency rule: `domain` and `application` import nothing from infrastructure,

@@ -293,6 +293,17 @@ vespa/
 - 2026-06-04 — **Tooling** mirrored from `schematalog`: `uv` + `just`; `ruff` (lint +
   format), `pyrefly` (types), `deptry` (deps), `pytest` + `pytest-cov` + `pytest-spec`;
   `uvx vulture/radon/complexipy` for safety. Recipes: `just check` / `test` / `ready`.
+- 2026-06-05 — **Domain code organisation**: the base classes
+  (`DomainObject` → `ValueObject`, `Entity`, `DomainEvent`) live in `domain/base.py`. Each
+  aggregate is its own package under `domain/` (e.g. `domain/model/` for the `DomainModel`
+  aggregate), holding its root entity, the value objects it owns, and its **repository**
+  protocol. **Drop the word "port"**: persistence protocols are per-aggregate
+  `<Aggregate>Repository` `Protocol`s defined in the aggregate's package; role / renderer /
+  exporter protocols keep concrete names (role-protocol home still TBD). "Sticky note" is
+  not a domain term. Names are single-field `ValueObject`s — no `RootModel`.
+- 2026-06-05 — **Lint conventions**: ignore `TRY003` (contextual messages in Pydantic
+  validators / domain errors are intentional). Silence vulture false-positives with an
+  inline `# noqa: F841` (ruff lists `F841` under `external`), never a `[tool.vulture]` block.
 - …add new rules here as they emerge…
 
 ---
