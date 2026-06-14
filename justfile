@@ -25,7 +25,7 @@ type:
 # Run security and safety checks.
 safety:
     uvx vulture --exclude .venv --min-confidence 100 .
-    uvx radon mi --show --multi --min B .
+    uvx radon mi --show --multi --min B src/
     uvx complexipy --quiet .
 
 # Run all checks.

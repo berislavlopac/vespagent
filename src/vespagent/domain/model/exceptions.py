@@ -5,6 +5,7 @@ create a circular import if placed at the top-level domain package.
 """
 
 from vespagent.domain.exceptions import DomainError
+from vespagent.domain.model.commands import CommandName
 from vespagent.domain.model.events import EventName
 
 
@@ -21,4 +22,20 @@ class EventNotFoundError(DomainError):
 
     def __init__(self, name: EventName) -> None:
         super().__init__(f"no event named '{name.value}' in this model")
+        self.name = name
+
+
+class DuplicateCommandError(DomainError):
+    """Raised when adding a command whose name already exists in the model."""
+
+    def __init__(self, name: CommandName) -> None:
+        super().__init__(f"command '{name.value}' already exists in this model")
+        self.name = name
+
+
+class CommandNotFoundError(DomainError):
+    """Raised when looking up a command name that is not in the model."""
+
+    def __init__(self, name: CommandName) -> None:
+        super().__init__(f"no command named '{name.value}' in this model")
         self.name = name
