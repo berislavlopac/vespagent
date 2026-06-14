@@ -304,6 +304,21 @@ vespa/
 - 2026-06-05 — **Lint conventions**: ignore `TRY003` (contextual messages in Pydantic
   validators / domain errors are intentional). Silence vulture false-positives with an
   inline `# noqa: F841` (ruff lists `F841` under `external`), never a `[tool.vulture]` block.
+- 2026-06-14 — **Role protocols** are named with a `Role` suffix: `FacilitatorRole`,
+  `ModelerRole`, `LanguageGuardianRole`, `BoundarySpotterRole`, `ChallengerRole`. The
+  suffix makes the protocol nature explicit at the call site without requiring the reader
+  to know which module they came from.
+- 2026-06-14 — **Spelling**: US spelling throughout (code *and* docs), including domain
+  terms that become identifiers (e.g. `Modeler`, not `Modeller`). The usual UK/US
+  code-vs-prose split breaks down when domain vocabulary is simultaneously identifiers and
+  documentation — the code spelling wins everywhere for consistency.
+- 2026-06-14 — **Aggregate-specific exceptions** live in their aggregate package
+  (e.g. `domain/model/exceptions.py`), not in the top-level `domain/exceptions.py`.
+  Reason: exceptions that carry aggregate value objects (e.g. `EventName`) would create a
+  circular import if placed at the top level, because `domain/exceptions.py` would import
+  from `domain/model/`, which in turn imports from `domain/exceptions.py`. Top-level
+  `domain/exceptions.py` is reserved for cross-cutting errors (`DomainError` base,
+  `ModelNotFoundError`) that carry no aggregate-specific types.
 - …add new rules here as they emerge…
 
 ---

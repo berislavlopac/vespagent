@@ -19,7 +19,7 @@ Hexagonal architecture with a framework-free core, laid out as DDD layers:
 
 ```
 src/vespagent/
-C├── domain/          # base classes + a package per aggregate (root, value objects, repository)
+├── domain/          # base classes + a package per aggregate (root, value objects, repository)
 ├── application/     # orchestration: the adaptive turn loop / use cases
 ├── infrastructure/  # adapters: Pydantic AI role agents (ACL), store, render, export
 ├── presentation/    # CLI now; web board later behind the same protocols
