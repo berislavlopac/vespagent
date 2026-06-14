@@ -209,7 +209,9 @@ practitioner for modeling soundness** — never "a verified-correct model".
   validator + type.
 - **Dependency rule:** `core` (domain + ports) imports nothing from adapters, the CLI,
   or Pydantic AI. Adapters depend on core, never the reverse.
-- **Prompts live in versioned files**, one per role; treat as source.
+- **Prompts live in versioned files** at `src/vespagent/prompts/`, one per role; treat as
+  source. Loaded at import time via `importlib.resources` so they are always co-located
+  with the package and included in the build automatically.
 - **Each role is its own framed call.** Never merge roles into one mega-prompt — the
   separation is what keeps the Language Guardian's vigilance from being diluted.
 - **Role context scoping is deliberate.** Give each role only what it needs; do not
@@ -222,22 +224,21 @@ practitioner for modeling soundness** — never "a verified-correct model".
 ## 8. Suggested project structure
 
 ```
-vespa/
+vespagent/
 ├── pyproject.toml           # Python 3.14; uv-managed
 ├── justfile
 ├── src/vespagent/
-│   ├── core/
-│   │   ├── model.py         # DomainModel, ModeledEvent, Command, BoundedContext,
-│   │   │                    #   GlossaryTerm, Session, Ambiguity, … (Pydantic v2)
-│   │   ├── ports.py         # Protocols: roles, ModelRenderer, ModelStore, ModelExporter
-│   │   └── orchestration.py # the turn loop + next-move logic (framework-free)
-│   ├── agents/              # Pydantic AI adapters implementing the role ports (ACL)
-│   ├── interface/
-│   │   └── cli.py           # CLI adapter now; web-board adapter later (same ports)
-│   ├── render/              # Mermaid renderer
-│   ├── store/               # SQLite/file persistence
-│   └── export/              # JSON exporter
-├── prompts/                 # one versioned prompt file per role
+│   ├── domain/              # base classes + one package per aggregate (model/, …)
+│   ├── application/         # orchestration: the adaptive turn loop / use cases
+│   ├── infrastructure/
+│   │   ├── agents/          # Pydantic AI role adapters (ACL — only place PA is imported)
+│   │   ├── store/           # SQLite/file persistence
+│   │   ├── render/          # Mermaid renderer
+│   │   └── export/          # JSON exporter
+│   ├── presentation/        # CLI now; web board later behind the same protocols
+│   ├── prompts/             # one versioned prompt file per role (loaded via importlib.resources)
+│   ├── common/              # shared utilities
+│   └── wiring/              # composition root + config + provider selection
 ├── evals/                   # scenarios + gold-standard models + scorers + baseline
 └── tests/                   # Layer 1 & 2
 ```
@@ -319,6 +320,11 @@ vespa/
   from `domain/model/`, which in turn imports from `domain/exceptions.py`. Top-level
   `domain/exceptions.py` is reserved for cross-cutting errors (`DomainError` base,
   `ModelNotFoundError`) that carry no aggregate-specific types.
+- 2026-06-14 — **Prompts moved inside the package** to `src/vespagent/prompts/`, loaded
+  via `importlib.resources.files("vespagent.prompts").joinpath("role.md").read_text()`.
+  Rationale: prompts are package data, not repository-level artefacts — they should be
+  co-located with the code that uses them, versioned together, and included in the build
+  automatically without extra `[tool.hatchling]` config.
 - …add new rules here as they emerge…
 
 ---
