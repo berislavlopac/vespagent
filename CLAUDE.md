@@ -252,6 +252,10 @@ vespagent/
 2. **Facilitator + Modeler** as Pydantic AI agents; everything in context; no other
    roles. One good interview turn: ask → answer → model updates; CLI prints the model.
    Stop and judge quality before going on.
+   - **2.5 — Provider config polish**: single `provider:model` strings with optional
+     per-role overrides; provider credentials come from the process environment only
+     (never `.env`). Config *permits* per-role model heterogeneity from day one;
+     actually diversifying waits for the eval harness (step 8) to measure it.
 3. **Reflect-and-confirm** loop (human verifier).
 4. **Loop it** — multi-turn, adaptive next-question (the agentic core). Watch it pull
    on threads rather than march a script.
@@ -262,6 +266,11 @@ vespagent/
 9. Add **tracing** (Layer 4); optional **Challenger**.
 10. *(Future)* web-board interface adapter via the existing `ModelRenderer`/interface
     ports — no core changes.
+11. *(Future)* **configuration matrix** — named profiles bundling role→model
+    assignments (e.g. all-Claude / cheap-watchers / all-local), layered on top of the
+    per-role settings from step 2.5. Build together with the eval harness (step 8):
+    a profile is only meaningful with its own eval baseline (§5), and the harness is
+    what makes "swap the Modeler and diff the score" a measurement instead of a guess.
 
 ---
 
@@ -325,6 +334,21 @@ vespagent/
   Rationale: prompts are package data, not repository-level artefacts — they should be
   co-located with the code that uses them, versioned together, and included in the build
   automatically without extra `[tool.hatchling]` config.
+- 2026-07-03 — **Provider configuration** (§9 step 2.5): models are single Pydantic AI
+  `provider:model` strings (`VESPA_DEFAULT_MODEL`, replacing the provider/name field
+  pair) with optional per-role overrides (`VESPA_FACILITATOR_MODEL`,
+  `VESPA_MODELER_MODEL`) falling back to the default. Provider credentials/endpoints
+  use each provider's **native** variables (`ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`,
+  `OLLAMA_BASE_URL`, …) and must live in the **process environment** — deliberately
+  *not* loaded from `.env` (no `load_dotenv()`): pydantic-settings reads `.env` only
+  for declared `VESPA_*` fields, so `.env` carries plain config while secrets arrive
+  through controlled channels (shell, direnv, secret managers, CI); Pydantic AI fails
+  loudly on first use when the configured provider's key is missing. The unused
+  `VESPA_BASE_URL` was dropped — Ollama is a first-class Pydantic AI provider and
+  takes its endpoint from `OLLAMA_BASE_URL`. Per-role overrides exist now so the
+  mechanism is in place (and the eval judge can later be a different model family),
+  but all roles stay on one model until the eval harness (§9 step 8) can measure a
+  swap. `.env.example` documents the variables.
 - …add new rules here as they emerge…
 
 ---

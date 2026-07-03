@@ -3,13 +3,19 @@
 Provider selection is the only place that knows which LLM is behind the roles.
 The domain and application layers never see a model string.
 
-Override via environment variables (prefix VESPA_) or a .env file:
-  VESPA_MODEL_PROVIDER=anthropic   (default; swap to "openai" for local models)
-  VESPA_MODEL_NAME=claude-opus-4-8
-  VESPA_BASE_URL=http://localhost:11434/v1   (for Ollama / vLLM)
+Models are Pydantic AI `provider:model` strings; the provider prefix selects the
+client (`anthropic`, `google`, `openai`, `ollama`, …). Override via environment
+variables (prefix `VESPA_`) or a `.env` file:
+
+  VESPA_DEFAULT_MODEL=anthropic:claude-opus-4-8   (default for every role)
+  VESPA_FACILITATOR_MODEL=google:gemini-2.5-pro   (optional per-role override)
+  VESPA_MODELER_MODEL=ollama:qwen3:14b            (optional per-role override)
+
+Provider credentials/endpoints use each provider's native variables — e.g.
+`ANTHROPIC_API_KEY`, `GOOGLE_API_KEY`, `OLLAMA_BASE_URL` — which the composition
+root loads from `.env` into the process environment (see `factories.py`).
 """
 
-from pydantic import computed_field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -18,18 +24,21 @@ class VespaSettings(BaseSettings):
 
     model_config = SettingsConfigDict(env_prefix="VESPA_", env_file=".env", extra="ignore")
 
-    model_provider: str = "anthropic"
-    """LLM provider understood by Pydantic AI (e.g. `"anthropic"`, `"openai"`)."""
+    default_model: str = "anthropic:claude-opus-4-8"
+    """Pydantic AI `provider:model` string used by every role without an override."""
 
-    model_name: str = "claude-opus-4-8"
-    """Model identifier within the provider (e.g. `"claude-opus-4-8"`)."""
+    facilitator_model: str | None = None
+    """Optional override for the Facilitator role."""
 
-    base_url: str | None = None
-    """Optional base URL override, used for local models via an OpenAI-compatible
-    endpoint (Ollama, vLLM). Ignored when `model_provider` is `"anthropic"`."""
+    modeler_model: str | None = None
+    """Optional override for the Modeler role."""
 
-    @computed_field
     @property
-    def pydantic_ai_model(self) -> str:
-        """The model string passed to Pydantic AI agents, e.g. `"anthropic:claude-opus-4-8"`."""
-        return f"{self.model_provider}:{self.model_name}"
+    def facilitator(self) -> str:
+        """The model string for the Facilitator role."""
+        return self.facilitator_model or self.default_model
+
+    @property
+    def modeler(self) -> str:
+        """The model string for the Modeler role."""
+        return self.modeler_model or self.default_model
